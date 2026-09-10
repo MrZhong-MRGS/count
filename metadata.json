@@ -1,0 +1,6 @@
+{
+  "name": "Countdown Timer",
+  "description": "An exam countdown timer with live clock, 30-minute interval checkpoint blocks, and adjustable split-panel layout.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
