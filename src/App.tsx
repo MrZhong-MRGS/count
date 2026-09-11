@@ -734,14 +734,6 @@ export default function App() {
           >
             {showNote ? 'Hide Note' : '+ Note'}
           </button>
-          <button
-            id="fullscreen-toggle-btn"
-            type="button"
-            onClick={toggleFullscreen}
-            title="Toggle Fullscreen Mode (Press F)"
-          >
-            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-          </button>
         </div>
 
         <div id="message-label">{message}</div>
