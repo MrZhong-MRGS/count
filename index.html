@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" style="background-color: #2E4CAE; color: white;">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,8 +9,20 @@
     <meta property="og:description" content="An exam countdown timer with live clock, 30-minute interval checkpoint blocks, and adjustable split-panel layout." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      html, body, #root, #layout {
+        background-color: #2E4CAE !important;
+        color: #ffffff !important;
+      }
+      :fullscreen { background-color: #2E4CAE !important; color: #ffffff !important; }
+      ::backdrop { background-color: #2E4CAE !important; }
+      :-webkit-full-screen { background-color: #2E4CAE !important; color: #ffffff !important; }
+      ::-webkit-backdrop { background-color: #2E4CAE !important; }
+      :-moz-full-screen { background-color: #2E4CAE !important; color: #ffffff !important; }
+      ::-moz-backdrop { background-color: #2E4CAE !important; }
+    </style>
   </head>
-  <body>
+  <body style="background-color: #2E4CAE; color: white; margin: 0; padding: 0;">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

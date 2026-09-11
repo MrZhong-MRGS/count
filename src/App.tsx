@@ -80,25 +80,62 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Fullscreen API toggle with safe fallback for container/iframe environments
+  // Ensure root background color is permanently set
+  useEffect(() => {
+    document.documentElement.style.backgroundColor = '#2E4CAE';
+    document.documentElement.style.color = '#ffffff';
+    document.body.style.backgroundColor = '#2E4CAE';
+    document.body.style.color = '#ffffff';
+  }, []);
+
+  // Fullscreen API toggle with safe cross-browser fallback
   const toggleFullscreen = useCallback(async () => {
     try {
-      if (!document.fullscreenElement) {
-        if (document.documentElement.requestFullscreen) {
-          await document.documentElement.requestFullscreen();
-        } else if (layoutRef.current?.requestFullscreen) {
-          await layoutRef.current.requestFullscreen();
+      const doc = document as any;
+      const docEl = document.documentElement as any;
+      const layoutEl = layoutRef.current as any;
+
+      const isFs = !!(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      );
+
+      // Explicitly reaffirm colors before entering/exiting
+      docEl.style.backgroundColor = '#2E4CAE';
+      document.body.style.backgroundColor = '#2E4CAE';
+      if (layoutEl) layoutEl.style.backgroundColor = '#2E4CAE';
+
+      if (!isFs) {
+        if (docEl.requestFullscreen) {
+          await docEl.requestFullscreen();
+        } else if (docEl.webkitRequestFullscreen) {
+          await docEl.webkitRequestFullscreen();
+        } else if (docEl.mozRequestFullScreen) {
+          await docEl.mozRequestFullScreen();
+        } else if (docEl.msRequestFullscreen) {
+          await docEl.msRequestFullscreen();
+        } else if (layoutEl?.requestFullscreen) {
+          await layoutEl.requestFullscreen();
+        } else if (layoutEl?.webkitRequestFullscreen) {
+          await layoutEl.webkitRequestFullscreen();
         }
         setIsFullscreen(true);
       } else {
-        if (document.exitFullscreen) {
-          await document.exitFullscreen();
+        if (doc.exitFullscreen) {
+          await doc.exitFullscreen();
+        } else if (doc.webkitExitFullscreen) {
+          await doc.webkitExitFullscreen();
+        } else if (doc.mozCancelFullScreen) {
+          await doc.mozCancelFullScreen();
+        } else if (doc.msExitFullscreen) {
+          await doc.msExitFullscreen();
         }
         setIsFullscreen(false);
       }
     } catch (err) {
-      console.warn('Fullscreen toggle failed (falling back to window pseudo-fullscreen):', err);
-      // Seamless toggle for restricted iframe preview environments
+      console.warn('Fullscreen toggle fallback:', err);
       setIsFullscreen((prev) => !prev);
     }
   }, []);
@@ -106,14 +143,27 @@ export default function App() {
   // Sync fullscreen state with browser changes (e.g. user pressed Esc or F11)
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      const doc = document as any;
+      const isFs = !!(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      );
+      setIsFullscreen(isFs);
+      document.documentElement.style.backgroundColor = '#2E4CAE';
+      document.body.style.backgroundColor = '#2E4CAE';
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
     };
   }, []);
 

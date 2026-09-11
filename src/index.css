@@ -1,23 +1,75 @@
 @import "tailwindcss";
 
+/* Base layout colors */
 html, body, #root, #layout {
     height: 100%;
     margin: 0;
-    background-color: #2E4CAE;
-    color: white;
+    background-color: #2E4CAE !important;
+    color: white !important;
     font-family: Arial, Helvetica, sans-serif;
     overflow: hidden;
 }
 
-/* Ensure browser Fullscreen API never falls back to black */
-:fullscreen,
-::backdrop,
-html:fullscreen,
-body:fullscreen,
-#layout:fullscreen,
-#layout:-webkit-full-screen,
-#layout:-moz-full-screen,
-#layout:-ms-fullscreen,
+#left-panel, #right-panel {
+    background-color: #2E4CAE;
+}
+
+/* Standard Fullscreen API */
+:fullscreen {
+    background-color: #2E4CAE !important;
+    color: white !important;
+}
+
+::backdrop {
+    background-color: #2E4CAE !important;
+}
+
+html:fullscreen, body:fullscreen, #layout:fullscreen {
+    background-color: #2E4CAE !important;
+    color: white !important;
+}
+
+/* WebKit (Safari, Chrome, Edge) - Must be isolated */
+:-webkit-full-screen {
+    background-color: #2E4CAE !important;
+    color: white !important;
+}
+
+::-webkit-backdrop {
+    background-color: #2E4CAE !important;
+}
+
+html:-webkit-full-screen, body:-webkit-full-screen, #layout:-webkit-full-screen {
+    background-color: #2E4CAE !important;
+    color: white !important;
+}
+
+/* Mozilla Firefox - Must be isolated */
+:-moz-full-screen {
+    background-color: #2E4CAE !important;
+    color: white !important;
+}
+
+::-moz-backdrop {
+    background-color: #2E4CAE !important;
+}
+
+html:-moz-full-screen, body:-moz-full-screen, #layout:-moz-full-screen {
+    background-color: #2E4CAE !important;
+    color: white !important;
+}
+
+/* Microsoft Edge / IE - Must be isolated */
+:-ms-fullscreen {
+    background-color: #2E4CAE !important;
+    color: white !important;
+}
+
+::-ms-backdrop {
+    background-color: #2E4CAE !important;
+}
+
+/* Class-based fallback */
 #layout.is-fullscreen {
     background-color: #2E4CAE !important;
     color: white !important;
