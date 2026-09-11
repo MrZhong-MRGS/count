@@ -134,14 +134,28 @@ export default function App() {
     return `${h}:${String(m).padStart(2, '0')}`;
   };
 
-  // Evaluate student leaving status based on active lockouts
+  // Format timestamp into local clock time (e.g. 9:40 AM or 09:40)
+  const formatExactClockTime = (timestampMs: number): string => {
+    const d = new Date(timestampMs);
+    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  };
+
+  // Evaluate student leaving status based on active lockouts and exact clock times
   const getLockoutStatus = useCallback((): {
     isLocked: boolean;
     title: string;
-    detail: string;
+    timeText: string;
   } => {
+    if (status === 'finished' || (status !== 'idle' && remainingSeconds <= 0)) {
+      return {
+        isLocked: true,
+        title: 'EXAM HAS FINISHED',
+        timeText: 'Please remain seated until dismissed',
+      };
+    }
+
     if (!lockoutPolicyEnabled || totalSeconds <= 0) {
-      return { isLocked: false, title: '', detail: '' };
+      return { isLocked: false, title: '', timeText: '' };
     }
 
     const elapsedSecs = totalSeconds - remainingSeconds;
@@ -149,13 +163,38 @@ export default function App() {
     const remainM = remainingSeconds / 60;
     const totalM = totalSeconds / 60;
 
-    // Check Lockout 1: First X minutes
-    if (lockFirstPeriod && elapsedM < firstLockMinutes) {
-      const minsUntilOpen = Math.max(1, Math.ceil(firstLockMinutes - elapsedM));
+    // Calculate projected timestamps (in ms) based on timer target
+    const finishMs =
+      status === 'running' && targetTimeRef.current
+        ? targetTimeRef.current
+        : Date.now() + remainingSeconds * 1000;
+    const startMs = finishMs - totalSeconds * 1000;
+
+    const firstLockEndMs = startMs + firstLockMinutes * 60 * 1000;
+    const lastLockStartMs = finishMs - lastLockMinutes * 60 * 1000;
+
+    const firstLockEndTimeStr = formatExactClockTime(firstLockEndMs);
+    const lastLockStartTimeStr = formatExactClockTime(lastLockStartMs);
+    const examEndTimeStr = formatExactClockTime(finishMs);
+
+    // Case 0: If lockouts overlap or exceed total duration, no leaving is permitted
+    if (lockFirstPeriod && lockLastPeriod && firstLockMinutes + lastLockMinutes >= totalM) {
       return {
         isLocked: true,
         title: 'STUDENTS CANNOT LEAVE',
-        detail: `First ${firstLockMinutes} mins lockout • Leaving allowed in ${minsUntilOpen} min`,
+        timeText: `No leaving allowed • Exam ends at ${examEndTimeStr}`,
+      };
+    }
+
+    // Check Lockout 1: First X minutes
+    if (lockFirstPeriod && elapsedM < firstLockMinutes) {
+      const timeText = lockLastPeriod
+        ? `Can leave at ${firstLockEndTimeStr} (until ${lastLockStartTimeStr})`
+        : `Can leave at ${firstLockEndTimeStr}`;
+      return {
+        isLocked: true,
+        title: 'STUDENTS CANNOT LEAVE',
+        timeText,
       };
     }
 
@@ -164,37 +203,29 @@ export default function App() {
       return {
         isLocked: true,
         title: 'STUDENTS CANNOT LEAVE',
-        detail: `Final ${lastLockMinutes} mins lockout • Must remain seated until dismissal`,
+        timeText: `Final lockout • Exam ends at ${examEndTimeStr}`,
       };
     }
 
-    // If neither lockout applies, students ARE allowed to leave
-    let nextLockoutStart: number | null = null;
+    // Allowed period (neither first nor last lockout applies)
     if (lockLastPeriod) {
-      const lastWindowStart = Math.max(0, totalM - lastLockMinutes);
-      if (elapsedM < lastWindowStart) {
-        nextLockoutStart = lastWindowStart;
-      }
-    }
-
-    if (nextLockoutStart !== null) {
-      const minsUntilLock = Math.max(1, Math.ceil(nextLockoutStart - elapsedM));
       return {
         isLocked: false,
         title: 'STUDENTS MAY LEAVE',
-        detail: `Leaving permitted • Lockout begins in ${minsUntilLock} min`,
+        timeText: `Can leave until ${lastLockStartTimeStr}`,
       };
     }
 
     return {
       isLocked: false,
       title: 'STUDENTS MAY LEAVE',
-      detail: 'Leaving permitted for the remainder of the exam',
+      timeText: `Can leave until exam ends at ${examEndTimeStr}`,
     };
   }, [
     lockoutPolicyEnabled,
     totalSeconds,
     remainingSeconds,
+    status,
     lockFirstPeriod,
     firstLockMinutes,
     lockLastPeriod,
@@ -409,15 +440,22 @@ export default function App() {
         </div>
 
         {/* Real-time Student Lockout Indicator (High Visibility) */}
-        {lockoutPolicyEnabled && (status === 'running' || status === 'paused' || status === 'finished') && (
+        {(lockoutPolicyEnabled || status === 'finished') && (status === 'running' || status === 'paused' || status === 'finished') && (
           <div id="leaving-indicator-container">
             <div
               className={`leaving-badge ${
                 lockoutStatus.isLocked ? 'forbidden' : 'allowed'
               }`}
             >
-              <span className="leaving-pulse" />
-              <span>{lockoutStatus.title}</span>
+              <div className="leaving-badge-top">
+                <span className="leaving-pulse" />
+                <span>{lockoutStatus.title}</span>
+              </div>
+              {lockoutStatus.timeText && (
+                <div className="leaving-time-text">
+                  {lockoutStatus.timeText}
+                </div>
+              )}
             </div>
           </div>
         )}

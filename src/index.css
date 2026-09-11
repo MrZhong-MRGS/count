@@ -88,9 +88,22 @@ html, body, #root {
 }
 
 #datetime {
-    margin-top: 20px;
-    font-size: clamp(18px, 3vw, 44px);
+    margin-top: 14px;
+    font-size: clamp(17px, 2.7vw, 38px);
     font-weight: 500;
+    line-height: 1.25;
+}
+
+#date-label {
+    opacity: 0.95;
+    font-weight: 600;
+}
+
+#time-label {
+    font-size: 1.05em;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-top: 3px;
 }
 
 #TR {
@@ -180,15 +193,36 @@ html, body, #root {
 
 .leaving-badge {
     display: inline-flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 10px 24px;
+    justify-content: center;
+    gap: 4px;
+    padding: 9px 28px;
     border-radius: 9999px;
-    font-size: clamp(15px, 1.6vw, 24px);
-    font-weight: bold;
-    letter-spacing: 0.03em;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
     transition: all 0.3s ease;
+    text-align: center;
+    max-width: 95%;
+}
+
+.leaving-badge-top {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: clamp(17px, 1.85vw, 28px);
+    font-weight: 800;
+    letter-spacing: 0.03em;
+}
+
+.leaving-time-text {
+    font-size: clamp(13px, 1.35vw, 20px);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 3px 16px;
+    border-radius: 9999px;
+    display: inline-block;
 }
 
 .leaving-badge.allowed {
@@ -197,19 +231,21 @@ html, body, #root {
     border: 2px solid #34d399;
 }
 
-.leaving-badge.forbidden {
+.leaving-badge.forbidden,
+.leaving-badge.finished {
     background: #8e1f2b;
     color: #fee2e2;
     border: 2px solid #f87171;
 }
 
 .leaving-pulse {
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
     border-radius: 50%;
     background: currentColor;
     display: inline-block;
     animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    flex-shrink: 0;
 }
 
 @keyframes pulse {
