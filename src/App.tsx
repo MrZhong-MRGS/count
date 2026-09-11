@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
+import { Maximize, Minimize } from 'lucide-react';
 
 interface BlockItem {
   label: string;
@@ -12,6 +13,9 @@ interface BlockItem {
 }
 
 export default function App() {
+  // Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+
   // Live clock state - formatted as DD/MM/YYYY
   const [currentDate, setCurrentDate] = useState<string>('');
   const [currentTime, setCurrentTime] = useState<string>('');
@@ -75,6 +79,63 @@ export default function App() {
     const interval = setInterval(updateClock, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Fullscreen API toggle with safe fallback for container/iframe environments
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!document.fullscreenElement) {
+        if (layoutRef.current?.requestFullscreen) {
+          await layoutRef.current.requestFullscreen();
+        } else if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        }
+        setIsFullscreen(true);
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+        setIsFullscreen(false);
+      }
+    } catch (err) {
+      console.warn('Fullscreen toggle failed (falling back to window pseudo-fullscreen):', err);
+      // Seamless toggle for restricted iframe preview environments
+      setIsFullscreen((prev) => !prev);
+    }
+  }, []);
+
+  // Sync fullscreen state with browser changes (e.g. user pressed Esc or F11)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  // Keyboard shortcut listener (F for Fullscreen)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isInput =
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        target?.isContentEditable;
+      if (isInput) return;
+
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleFullscreen]);
 
   // Half-hour blocks generator
   const createHalfHourBlocks = useCallback((totalSecs: number) => {
@@ -385,10 +446,23 @@ export default function App() {
     <div
       id="layout"
       ref={layoutRef}
+      className={isFullscreen ? 'is-fullscreen' : ''}
       style={{
         gridTemplateColumns: `${leftWidthPercent}% 5px ${100 - leftWidthPercent}%`,
       }}
     >
+      {/* Top-Right Fullscreen Toggle Button */}
+      <button
+        id="top-fullscreen-btn"
+        type="button"
+        className={`top-fullscreen-btn ${isFullscreen ? 'active' : ''}`}
+        onClick={toggleFullscreen}
+        title={isFullscreen ? 'Exit Fullscreen (F / Esc)' : 'Enter Fullscreen (F)'}
+      >
+        {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+        <span className="fullscreen-btn-text">{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
+      </button>
+
       {/* LEFT PANEL */}
       <div id="left-panel">
         <br />
@@ -608,7 +682,15 @@ export default function App() {
             onClick={() => setShowNote((prev) => !prev)}
             title="Toggle movable instructions / codes box"
           >
-            + Note
+            {showNote ? 'Hide Note' : '+ Note'}
+          </button>
+          <button
+            id="fullscreen-toggle-btn"
+            type="button"
+            onClick={toggleFullscreen}
+            title="Toggle Fullscreen Mode (Press F)"
+          >
+            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
           </button>
         </div>
 

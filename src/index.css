@@ -405,3 +405,52 @@ html, body, #root {
     background: rgba(255, 255, 255, 0.03);
 }
 
+/* Top-Right Fullscreen Toggle Button */
+.top-fullscreen-btn {
+    position: fixed;
+    top: 14px;
+    right: 16px;
+    z-index: 999;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(13, 26, 69, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white;
+    padding: 7px 14px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.top-fullscreen-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+.top-fullscreen-btn.active {
+    background: #ffffff;
+    color: #1A3383;
+    font-weight: 700;
+    border-color: #ffffff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 640px) {
+    .fullscreen-btn-text {
+        display: none;
+    }
+    .top-fullscreen-btn {
+        padding: 8px;
+    }
+}
+
+
+
