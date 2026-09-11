@@ -84,10 +84,10 @@ export default function App() {
   const toggleFullscreen = useCallback(async () => {
     try {
       if (!document.fullscreenElement) {
-        if (layoutRef.current?.requestFullscreen) {
-          await layoutRef.current.requestFullscreen();
-        } else if (document.documentElement.requestFullscreen) {
+        if (document.documentElement.requestFullscreen) {
           await document.documentElement.requestFullscreen();
+        } else if (layoutRef.current?.requestFullscreen) {
+          await layoutRef.current.requestFullscreen();
         }
         setIsFullscreen(true);
       } else {
